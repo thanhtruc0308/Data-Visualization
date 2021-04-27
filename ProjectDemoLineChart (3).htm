@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<!-- Load d3.js -->
+<script src="https://d3js.org/d3.v4.js"></script>
+
+<!-- Create a div where the graph will take place -->
+<div id="my_dataviz"></div>
+<script>
+
+var margin = {top: 60, right: 60, bottom: 70, left: 60},
+    width = 1000 - margin.left - margin.right,
+    height = 400 - margin.top - margin.bottom;
+var svg = d3.select("#my_dataviz")
+  .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+d3.csv("https://raw.githubusercontent.com/thanhtruc0308/Data-Visualization/main/changi.csv",
+    	function(d) { return {
+		Date : d3.timeParse("%Y-%m-%d")(d.Date),
+		MeanTemperature : d.MeanTemperature }},
+	
+	function(data) {
+		var x = d3.scaleTime()
+			.domain(d3.extent(data, function(d){ return d.Date;}))
+			.range([0,width])
+		xAxis = svg.append("g")
+			.attr("transform","translate(0," + height + ")")
+			.call(d3.axisBottom(x));
+
+		var y = d3.scaleLinear()
+			.domain([20,d3.max(data, function(d){ return +d.MeanTemperature }) ])
+			.range([height,0])
+		yAxis = svg.append("g")
+			.call(d3.axisLeft(y));
+svg.append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("y", 0 - margin.left)
+    .attr("x",0 - (height / 2))
+    .attr("dy", "1em")
+    .style("text-anchor", "middle")
+    .text("Mean Temperature (°C)")
+svg.append("text")
+    .attr("transform","translate(" + (width/2) + " ," + (height + margin.top)+ ")")
+    .style("text-anchor", "middle")
+    .text("Changi Station")		
+    var clip = svg.append("defs").append("svg:clipPath")
+        .attr("id", "clip")
+        .append("svg:rect")
+        .attr("width", width )
+        .attr("height", height )
+        .attr("x", 0)
+        .attr("y", 0);
+
+    var brush1 = d3.brushX()                   
+        .extent( [ [0,0], [width,height] ] )  
+        .on("end", updateChart)    
+
+    var line = svg.append('g')
+      .attr("clip-path", "url(#clip)")
+
+    line.append("path")
+      .datum(data)
+      .attr("class", "line")
+      .attr("fill", "none")
+      .attr("stroke", "coral")
+      .attr("stroke-width", 1)
+      .attr("d", d3.line()
+        .x(function(d) { return x(d.Date) })
+        .y(function(d) { return y(d.MeanTemperature) })
+        )
+
+    line
+      .append("g")
+        .attr("class", "brush")
+        .call(brush1);
+
+    var idleTimeout
+    function idled() { idleTimeout = null; }
+
+    function updateChart() {
+      extent = d3.event.selection
+      if(!extent){
+        if (!idleTimeout) return idleTimeout = setTimeout(idled, 350);
+        x.domain([ 4,8])
+      }else{
+        x.domain([ x.invert(extent[0]), x.invert(extent[1]) ])
+        line.select(".brush1").call(brush1.move, null)
+      }
+
+      xAxis.transition().duration(1000).call(d3.axisBottom(x))
+      line
+          .select('.line')
+          .transition()
+          .duration(1000)
+          .attr("d", d3.line()
+            .x(function(d) { return x(d.Date) })
+            .y(function(d) { return y(d.MeanTemperature)})
+          )
+    }
+
+    svg.on("dblclick",function(){
+      x.domain(d3.extent(data, function(d) { return d.Date; }))
+      xAxis.transition().call(d3.axisBottom(x))
+      line
+        .select('.line')
+        .transition()
+        .attr("d", d3.line()
+          .x(function(d) { return x(d.Date) })
+          .y(function(d) { return y(d.MeanTemperature) })
+      )
+    });
+
+})
+
+var svg2 = d3.select("#my_dataviz")
+  .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+d3.csv("https://raw.githubusercontent.com/thanhtruc0308/Data-Visualization/main/angmokio.csv",
+    	function(d) { return {
+		Date : d3.timeParse("%Y-%m-%d")(d.Date),
+		MeanTemperature : d.MeanTemperature }},
+	
+	function(data2) {
+		var x = d3.scaleTime()
+			.domain(d3.extent(data2, function(d){ return d.Date;}))
+			.range([0,width])
+		xAxis = svg2.append("g")
+			.attr("transform","translate(0," + height + ")")
+			.call(d3.axisBottom(x));
+
+		var y = d3.scaleLinear()
+			.domain([20,d3.max(data2, function(d){ return +d.MeanTemperature }) ])
+			.range([height,0])
+		yAxis = svg2.append("g")
+			.call(d3.axisLeft(y));
+svg2.append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("y", 0 - margin.left)
+    .attr("x",0 - (height / 2))
+    .attr("dy", "1em")
+    .style("text-anchor", "middle")
+    .text("Mean Temperature (°C)")
+svg2.append("text")
+    .attr("transform","translate(" + (width/2) + " ," + (height + margin.top)+ ")")
+    .style("text-anchor", "middle")
+    .text("Ang Mo Kio Station")	
+    var clip = svg2.append("defs").append("svg:clipPath")
+        .attr("id", "clip")
+        .append("svg:rect")
+        .attr("width", width )
+        .attr("height", height )
+        .attr("x", 0)
+        .attr("y", 0);
+
+    var brush2 = d3.brushX()                   
+        .extent( [ [0,0], [width,height] ] )  
+        .on("end", updateChart)    
+
+    var line = svg2.append('g')
+      .attr("clip-path", "url(#clip)")
+
+    line.append("path")
+      .datum(data2)
+      .attr("class", "line")
+      .attr("fill", "none")
+      .attr("stroke", "blue")
+      .attr("stroke-width", 1)
+      .attr("d", d3.line()
+        .x(function(d) { return x(d.Date) })
+        .y(function(d) { return y(d.MeanTemperature) })
+        )
+
+    line
+      .append("g")
+        .attr("class", "brush2")
+        .call(brush2);
+
+    var idleTimeout
+    function idled() { idleTimeout = null; }
+
+    function updateChart() {
+      extent = d3.event.selection
+      if(!extent){
+        if (!idleTimeout) return idleTimeout = setTimeout(idled, 350);
+        x.domain([ 4,8])
+      }else{
+        x.domain([ x.invert(extent[0]), x.invert(extent[1]) ])
+        line.select(".brush2").call(brush2.move, null)
+      }
+
+      xAxis.transition().duration(1000).call(d3.axisBottom(x))
+      line
+          .select('.line')
+          .transition()
+          .duration(1000)
+          .attr("d", d3.line()
+            .x(function(d) { return x(d.Date) })
+            .y(function(d) { return y(d.MeanTemperature)})
+          )
+    }
+
+    svg2.on("dblclick",function(){
+      x.domain(d3.extent(data2, function(d) { return d.Date; }))
+      xAxis.transition().call(d3.axisBottom(x))
+      line
+        .select('.line')
+        .transition()
+        .attr("d", d3.line()
+          .x(function(d) { return x(d.Date) })
+          .y(function(d) { return y(d.MeanTemperature) })
+      )
+    });
+
+})
+
+var svg3 = d3.select("#my_dataviz")
+  .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+d3.csv("https://raw.githubusercontent.com/thanhtruc0308/Data-Visualization/main/tuassouth.csv",
+    	function(d) { return {
+		Date : d3.timeParse("%Y-%m-%d")(d.Date),
+		MeanTemperature : d.MeanTemperature }},
+	
+	function(data3) {
+		var x = d3.scaleTime()
+			.domain(d3.extent(data3, function(d){ return d.Date;}))
+			.range([0,width])
+		xAxis = svg3.append("g")
+			.attr("transform","translate(0," + height + ")")
+			.call(d3.axisBottom(x));
+
+		var y = d3.scaleLinear()
+			.domain([20,d3.max(data3, function(d){ return +d.MeanTemperature }) ])
+			.range([height,0])
+		yAxis = svg3.append("g")
+			.call(d3.axisLeft(y));
+svg3.append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("y", 0 - margin.left)
+    .attr("x",0 - (height / 2))
+    .attr("dy", "1em")
+    .style("text-anchor", "middle")
+    .text("Mean Temperature (°C)")
+svg3.append("text")
+    .attr("transform","translate(" + (width/2) + " ," + (height + margin.top)+ ")")
+    .style("text-anchor", "middle")
+    .text("Tuas South Station")		
+    var clip = svg3.append("defs").append("svg:clipPath")
+        .attr("id", "clip")
+        .append("svg:rect")
+        .attr("width", width )
+        .attr("height", height )
+        .attr("x", 0)
+        .attr("y", 0);
+
+    var brush3 = d3.brushX()                   
+        .extent( [ [0,0], [width,height] ] )  
+        .on("end", updateChart)    
+
+    var line = svg3.append('g')
+      .attr("clip-path", "url(#clip)")
+
+    line.append("path")
+      .datum(data3)
+      .attr("class", "line")
+      .attr("fill", "none")
+      .attr("stroke", "green")
+      .attr("stroke-width", 1)
+      .attr("d", d3.line()
+        .x(function(d) { return x(d.Date) })
+        .y(function(d) { return y(d.MeanTemperature) })
+        )
+
+    line
+      .append("g")
+        .attr("class", "brush3")
+        .call(brush3);
+
+    var idleTimeout
+    function idled() { idleTimeout = null; }
+
+    function updateChart() {
+      extent = d3.event.selection
+      if(!extent){
+        if (!idleTimeout) return idleTimeout = setTimeout(idled, 350);
+        x.domain([ 4,8])
+      }else{
+        x.domain([ x.invert(extent[0]), x.invert(extent[1]) ])
+        line.select(".brush3").call(brush3.move, null)
+      }
+
+      xAxis.transition().duration(1000).call(d3.axisBottom(x))
+      line
+          .select('.line')
+          .transition()
+          .duration(1000)
+          .attr("d", d3.line()
+            .x(function(d) { return x(d.Date) })
+            .y(function(d) { return y(d.MeanTemperature)})
+          )
+    }
+
+    svg3.on("dblclick",function(){
+      x.domain(d3.extent(data3, function(d) { return d.Date; }))
+      xAxis.transition().call(d3.axisBottom(x))
+      line
+        .select('.line')
+        .transition()
+        .attr("d", d3.line()
+          .x(function(d) { return x(d.Date) })
+          .y(function(d) { return y(d.MeanTemperature) })
+      )
+    });
+
+})
+
+
+
+</script>
