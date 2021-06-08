@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<script src="https://d3js.org/d3.v4.min.js"></script>
+
+<style>
+<style>
+div.tooltip {	
+  position: absolute;			
+  text-align: center;			
+  width: 140px;					
+  height: 50px;					
+  padding: 2px;				
+  font: 12px sans-serif;		
+  background: lightgreen;	
+  border: 0px;		
+  border-radius: 8px;			
+  pointer-events: none;			
+}
+
+html {
+  font: normal 100%/1.4 Georgia,serif;
+  background: #eff4f0;
+}
+</style>
+<div id="my_dataviz"></div>
+<script>
+
+var margin = {top: 60, right: 60, bottom: 70, left: 60},
+    width = 1200 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+var svg = d3.select("#my_dataviz")
+    .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+d3.csv("https://raw.githubusercontent.com/thanhtruc0308/Data-Visualization/main/Singaporecarbonlevel.csv",function(data) { 
+ data.forEach(function(d) {
+	d.Entity = d.Entity
+	d.CO2 = +d.CO2 
+	d.Year = +d.Year })
+
+ var x = d3.scaleLinear()
+    .domain(d3.extent(data, function(d) { return d.Year; }))
+    .range([ 0, width ]);
+ xAxis = svg.append("g")
+    .attr("transform", "translate(0," + height + ")")
+    .call(d3.axisBottom(x));
+
+ var y = d3.scaleLinear()
+    .domain([0, d3.max(data, function(d) { return d.CO2 ; })])
+    .range([ height, 0 ]);
+ yAxis = svg.append("g")
+    .call(d3.axisLeft(y));
+
+ svg.append("text")
+    .attr("transform", "rotate(-90)")
+    .attr("y", 0 - margin.left)
+    .attr("x",0 - (height / 2))
+    .attr("dy", "1em")
+    .style("text-anchor", "middle")
+    .text("Per capita CO2 emissions")
+svg.append("text")
+    .attr("transform","translate(" + (width/2) + " ," + (height + margin.top)+ ")")
+    .style("text-anchor", "middle")
+    .text("Year")		
+
+var clip = svg.append("defs").append("svg:clipPath")
+        .attr("id", "clip")
+        .append("svg:rect")
+        .attr("width", width )
+        .attr("height", height )
+        .attr("x", 0)
+        .attr("y", 0);
+
+    var line = svg.append('g')
+      .attr("clip-path", "url(#clip)")
+
+    line.append("path")
+      .datum(data)
+      .attr("class", "line")
+      .attr("fill", "none")
+      .attr("stroke", "red")
+      .attr("stroke-width", 2)
+      .attr("d", d3.line()
+        .x(function(d) { return x(d.Year) })
+        .y(function(d) { return y(d.CO2) })
+        )
+let div = d3.select("body").append("div")	
+    .attr("class", "tooltip")				
+    .style("opacity", 0); 
+
+svg.selectAll("circle")
+    .data(data)
+    .enter()
+    .append("circle")
+    .attr("r", 6)
+    .attr("cx", function(d){return x(d.Year);})
+    .attr("cy", function(d){return y(d.CO2);})
+    .style("fill", "red")
+    .on("mouseover", function(d) {		
+      div.style("opacity", .9);		
+      div.html("Per capita CO2 emissions: " + d.CO2)	
+      .style("left", (d3.event.pageX) + "px")		
+      .style("top", (d3.event.pageY - 28) + "px");	
+      })					
+    .on("mouseout", function(d) {		
+      div.style("opacity", 0);	
+    });
+
+  let formatxAxis = d3.format('.0f'); 
+    
+})
+</script>
